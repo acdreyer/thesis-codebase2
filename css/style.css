@@ -1,0 +1,221 @@
+body {
+
+	font-family: 'Muli', sans-serif;
+	color: #fff;
+	background-color: #133b67;
+}
+
+.over-all {
+	background-image: url("../assets/graph_paper.jpg");
+	max-width: 1000px;
+	margin: auto;
+	background-color: #133b67;
+	background-size: cover;
+	background-repeat: no-repeat;
+	/*display: block; */
+	min-width: 1000px;
+	/* text-align: center; */
+}
+
+#top-intro {
+	width: 100%;
+	margin: 0 auto;
+	/*padding-left: 70px;*/
+	/*display: flex;*/
+}
+
+@font-face {
+	font-family: Akzidenz-grotesk-light;
+	src: url('../fonts/Akzidenz-grotesk-light.ttf');
+}
+
+@font-face {
+	font-family: Akzidenz-grotesk-roman;
+	src: url('../fonts/Akzidenz-grotesk-roman.ttf');
+}
+
+#title-main {
+	padding-top: 20px;
+	font-size: 57px;
+	font-family: "Akzidenz-grotesk-roman", sans-serif, 'Cochin', Times, 'Times New Roman', serif;
+	margin-bottom: -12px;
+	margin-top: 20px;
+	/*text-align: center;*/
+	justify-content: center;
+	display: flex;
+	width: 100%;
+	font-weight: 300;
+	color: #ddd;
+	letter-spacing: 1px;
+}
+
+#fromNtoN {
+	padding-top: 20px;
+	padding-bottom: 20px;
+	padding-right: 10%;
+	width: 60%;
+	opacity: 90%;
+}
+
+#title-logo {
+	text-align: center;
+	width: 100%;
+}
+
+#NACAwings {
+	width: 30%;
+	filter: invert(0.9);
+}
+
+
+
+#intro-title {
+	width: 46%;
+	display: inline-block;
+}
+
+#title-sub {
+	font-size: 17px;
+	margin-top: 11px;
+	font-family: "Courier";
+	font-weight: medium;
+	color: rgb(182, 194, 218);
+	/* word-spacing: 5px; */
+	text-align: center;
+	text-justify: inter-word;
+	padding-left: 15px;
+	padding-right: 15px;
+	padding-bottom: 15px;
+}
+
+#intro-text {
+	display: flex;
+	text-align: justify;
+	font-family: sans-serif;
+	font-family: 'Courier', monospace;
+}
+
+#top-summary-left {
+	width: 45%;
+	padding-left: 3%;
+	padding-right: 2%;
+}
+
+#top-summary-right {
+	width: 45%;
+	padding-right: 3%;
+	padding-left: 2%;
+}
+
+#sketch-holder {
+	margin: 0;
+	display: flex;
+
+	/* This centers our sketch horizontally. */
+	justify-content: center;
+}
+
+
+
+
+
+#top-chrome-note {
+	font-size: 17px;
+	color: #f6f4ef;
+	text-align: center;
+	margin-top: 20px;
+	font-weight: 300;
+}
+
+#royal-chart {
+	text-align: center;
+	position: relative;
+}
+
+/*#royal-chart canvas {*/
+
+/*	position: absolute;*/
+
+/*	top: 0;*/
+
+/*	pointer-events: none;*/
+
+/*	z-index: -1;*/
+
+/*}*/
+
+/*#royal-chart svg {*/
+
+/*	z-index: 2;*/
+
+/*}*/
+
+#credit {
+	font-family: 'IM Fell DW Pica', serif;
+	margin-top: 30px;
+	margin-bottom: 30px;
+	font-size: 12px;
+	margin-left: 30px;
+	line-height: 150%;
+}
+
+a,
+a:link,
+a:visited,
+a:active {
+	color: #ddece9;
+	border-bottom: 1px dotted rgba(231, 228, 202, .5);
+	text-decoration: none;
+}
+
+/* --- Legend --- */
+
+.legend-node-text,
+.legend-link-text,
+.legend-color-text,
+.legend-color-value {
+	font-size: 12px;
+	fill: #c9c6c0;
+	font-family: 'IM Fell DW Pica', serif;
+}
+
+.legend-link-text,
+.legend-color-text {
+	text-anchor: middle;
+}
+
+.legend-color-value {
+	font-size: 15px;
+}
+
+.legend-color-path {
+	fill: none;
+	stroke-linecap: round;
+}
+
+/* --- Titles --- */
+
+.royal-name {
+	text-anchor: middle;
+	font-size: 16px;
+	fill: #c9c6c0;
+	font-family: 'IM Fell DW Pica', serif;
+}
+
+.interesting-royal-name {
+	font-size: 11px;
+	pointer-events: none;
+	font-family: 'IM Fell DW Pica', serif;
+}
+
+.royal-country {
+	text-anchor: middle;
+	font-size: 11px;
+	fill: #7e7b72;
+}
+
+.birth-year-label {
+	text-anchor: end;
+	font-size: 12px;
+	fill: #7e7b72;
+}
