@@ -1,0 +1,200 @@
+ <!DOCTYPE html>
+
+
+<!-- This page does a force layout pre-render for final visualization.
+Due to performance issues when visualizing 13000+ nodes in svg while doing a force layout,
+the nodes need to be pre-rendered and positions stored. 
+
+The variables need to be manually stored once the force simulation 
+has converged by pressing the button on the page. 
+This isn't an ideal implementation, 
+but is a workaround to be able to store the client side rendering. 
+In future this could be improved.
+
+1. Load the page and wait for the force layout to converge (nodes stop moving) 
+2. Press the download link.
+
+Ideally in future there should be a script that runs d3 force layout 
+on server in node/express rather on client.... 
+
+https: //bl.ocks.org/allisonking/49e10b78dc09c56a43bb7b56b983b34d
+https: //shinglyu.com/web/2019/02/09/js_download_as_file.html
+https: //codepen.io/anon/pen/qZQBmN?editors=1010
+-->
+
+
+<meta charset="utf-8">
+<head>
+<title class='bg-black'>Force layout (foci)</title>
+</head>
+
+
+
+
+
+<style>.bg-black {
+  background: #000;
+}
+.bg-black-blue {
+  /* background: #d3dce6; */
+  background: #000;
+  background-image: linear-gradient( #000, #2772CB);
+}
+
+@keyframes move {
+  100% {
+    motion-offset: 100%;
+    offset-distance: 100%;
+  }
+}
+</style>
+
+
+
+
+
+
+<body>
+  
+  <!--create the download link and graph div-->
+  <button id='printbutton'>Download coords</button>
+  <div id="content" class="bg-black">
+    <svg width="1200" height="1600">
+      <g transform="translate(0,0)"></g>
+    </svg>
+  </div >
+  
+  
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+
+
+  <script>
+  
+  var fRead = 'NACA_forForceLayout.csv';
+  var fWrite = 'NACA_afterForceLayout.csv';
+  
+
+// do the force layout
+  d3.csv(fRead).then((layoutData)=> {
+
+// check the structure
+    console.log(layoutData[10000]);
+    var width=1200, height=1600;
+    var colorScale=['white', 'lightblue', 'white', 'white', 'white'];
+
+
+// initialize the simulation
+    var simulation=d3.forceSimulation(layoutData) // 
+      // .force('charge', d3.forceManyBody().strength(0.2))
+      .force('x', d3.forceX().x(function(d) {
+        let xx = parseFloat(d.Xnorm);
+        // xx=xx+Math.random()*100;
+        // console.log(d3.interpolate(0, 1000)(xx/108.66))
+        return d3.interpolate(0, 1000)(xx/108.66);
+      })) 
+      .force('y', d3.forceY().y(function(d) {
+        let yy = parseFloat(d.yyyy)
+        // console.log(yy)
+        return d3.interpolate(1600, 0)((yy-1915)/45);
+      })) 
+      .force('collision', d3.forceCollide().radius(function(d) {
+        return 3;
+      })) 
+      .on('tick', ticked);
+
+
+// do the iterations
+    function ticked() {
+      var u=d3.select('svg g') 
+      .selectAll('circle') 
+      .data(layoutData);
+
+    u.enter() 
+    .append('a')
+    .attr('xlink:href', function(d) {
+      // let yy = parseFloat(d.y);
+      // console.log(d.id_hd)
+      let string= 'https://digital.library.unt.edu/ark:/67531/'+d.id_hd+'/m1/1/';
+      return string;
+    }) 
+    .append('circle') 
+    .attr('r', function(d) {
+        return 1.2;
+      }) 
+    .style('fill', function(d) {
+      return 'white'; //colorScale[d.category];
+      }) 
+    .merge(u) 
+    .attr('cx', function(d) {
+      // let xx = parseFloat(d.Xnorm);
+      // xx=xx+Math.random()*0.2
+      // console.log(xx)
+      return d.x;//d3.interpolate(0, 1200)(xx/108.66);
+    }) 
+    .attr('cy', function(d) {
+      // let yy = parseFloat(d.yyyy);
+      // console.log((yy-1915)/45)
+      return d.y;//d3.interpolate(1600, 0)((yy-1915)/45);
+    }) 
+    .attr('shape-rendering', 'optimizeSpeed ') 
+    .attr('class', 'node') 
+    u.exit().remove();
+  }
+
+
+
+  // -------------------------------------------
+  // This part gets the data from the window/dom on button click
+  // -------------------------------------------
+  d3.select('#printbutton').on('click', printInfo);
+
+  function printInfo() {
+    var output= {};
+    var nodeInfo=[];
+    var interInfo=[];
+    var linkInfo=[];
+
+    d3.selectAll('.node') .filter(function(d) {
+      d.fx=d.x;
+      d.fy=d.y;
+      d.vx=0;
+      d.vy=0;
+      d.index=d.id_hd;
+      nodeInfo.push(d);
+    }
+    );
+    // d3.selectAll('.intermediate') .filter(function(d) {
+    //   d.fx=d.x;
+    //   d.fy=d.y;
+    //   d.vx=0;
+    //   d.vy=0;
+    //   interInfo.push(d);
+    // }
+    // );
+
+    output['nodes']=nodeInfo;
+    // output['intermediates']=interInfo;
+    console.log(nodeInfo[0].x); 
+    
+    // create the csv content 
+    // the arrow function is an iterator over the array of objects that were
+    // created in the previos steps; like a shorthand version of forEach()
+    let csvContent = "data:text/csv;charset=utf-8," 
+    +'id_hd,x,y\n'+nodeInfo.map(e => e.id_hd + ',' + e.x + ',' + e.y  ).join("\n");
+    
+    
+    // This is the workaround to download the coordinates in the browser
+    //https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
+    var encodedUri = encodeURI(csvContent);
+    var link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", fWrite);
+    document.body.appendChild(link); // Required for FF
+    link.click(); // This will download the data file named "my_data.csv".
+  }
+  
+}) 
+</script>
+
+</body>
+</html>

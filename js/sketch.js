@@ -4,22 +4,46 @@ var xarr = [],
 var boundRange, xSel, ySel;
 var slidermax = 1000;
 var xmargin = 50;
+var slidermin = xmargin;
 var ymargin = 50;
 var xfocus = 0;
 var yfocus = 0;
-var sliderglobal = xmargin;
+var sliderglobal = 1000/2;
+var sliderglobalTOC;
+var tocXCol=1;
+var tocNameCol=2;
+var minTocX=1;
+var maxTocX=108.99;
+var globalSubj = {};
+globalSubj.x = 50;
+globalSubj.text='Select';
 
 let img;
 
-// function preload() {
-//   img = loadImage('./assets/graph_paper.jpg');
-// }
+function preload() {
+  // img = loadImage('./assets/graph_paper.jpg');
+  // alldata = loadTable('/data/NACA_vizData_all.csv', 'csv', 'header')
+  unttable = loadTable('/data/NACA_viz_full.csv', 'csv', 'header')
+  toctable = loadTable('/data/NACA_vizTOCxnormId.csv', 'csv', 'header')
+
+  
+  fontGudeaRegular = loadFont('fonts/Gudea-Regular.ttf');
+  // fontItalic = loadFont('assets/Italic.ttf');
+  // fontBold = loadFont('assets/Bold.ttf');
+
+
+}
+
 
 
 function setup() {
 
-  var canvas = createCanvas(800, 1200)
+  var canvas = createCanvas(1000, 1200)
   canvas.parent('sketch-holder');
+  // var vizdata = alldat
+  print(unttable)
+  print(toctable)
+
 
 
   // generate random points; add data later
@@ -33,13 +57,35 @@ function setup() {
   }
 
 
+
+  // ------------------initialize the slider/text category limits------------------
+  // var minTocX = 100;
+  // var maxTocX = 0;
+  // var tocNameCol = toctable.columns.indexOf('tocName');
+  var tocXCol = toctable.columns.indexOf('Xnorm');
+  // var tocLCol = toctable.columns.indexOf('Lcustom');
+  for (let r=0; r<toctable.getRowCount(); r++){
+    var thistocval = toctable.getNum(r,tocXCol);
+
+    if (thistocval < minTocX){
+      minTocX=thistocval;
+    } 
+    else if (thistocval > maxTocX){
+      maxTocX=thistocval;
+    }
+
+  }
+  // print(minTocX)
+  // print(maxTocX)
+  
+  
+
+
+
+
+
+
   boundRange = 20;
-  // var slidervals = width - 2 * xmargin;
-  // slider = createSlider(0, slidermax, 1000);
-  // slider.position(xmargin, ymargin/3 );
-  // slider.style('width', str(slidervals) + 'px');
-
-
 
 }
 
@@ -63,40 +109,58 @@ function draw() {
 
 
 
+  // ------------------ frame the canvas outer border------------------
+  fill('#ffffff00'); stroke(255,255,255,150); strokeWeight(1)
+  rectMode(CORNER);rect(0,0,1000,1200)
 
 
-  // background(2, 73, 124)
-  // image(img, 0, 0, 800, 1200);
 
-
-
-  // Add the slidervalue
-  // let val = slider.value();
-  // x_slider = map(val, 0, slidermax, xmargin, width - xmargin);
-  // let val = slider.value();
-  // x_slider = map(val,0,slidermax,0,width);
+  // create a custom slider for Table of Contents (X-axis) filter
   x_slider = sliderglobal;
   var sliderheight = 20;
-  var sliderwidth = 10;
-  var slidery=ymargin/4;
+  var slidercircleD = 16;
+  var slidery=ymargin/2;
+
+  // ------------------ slider horizontal bar ------------------
   stroke(255,255,255,150);fill(255,255,255,200); strokeWeight(1)
-  rect(xmargin,slidery,width-2*xmargin,20)
-  
-  stroke(clr_lvl4, 150);
-  strokeWeight(2)
-  // stroke(0,0,0); strokeWeight(1)
-  for (i=xmargin; i <= width-2*xmargin; i=i+50){
-    line(i,ymargin,i,ymargin+sliderheight);
-  }
-  
+  rectMode(CENTER);rect(width/2,slidery,width-2*xmargin+slidercircleD,6,3)
+  rectMode(CORNER);
   stroke(clr_lvl5,150);fill(255,255,255,150); strokeWeight(1)
-  rect(x_slider-sliderwidth/2,slidery,sliderwidth,sliderheight)
-  triangle(x_slider-sliderwidth/2,slidery+sliderheight,x_slider,slidery+sliderheight*1.5,x_slider+sliderwidth/2,slidery+sliderheight)
-  stroke(0,0,0,150);fill(clr_lvl1); strokeWeight(1)
-  line(x_slider,slidery,x_slider,slidery+sliderheight*1.5)
+  circle(x_slider,slidery,slidercircleD)
+  text(str(sliderglobal),x_slider,slidery)
+  sliderglobalTOCX = map(sliderglobal,slidermin,slidermax,minTocX,maxTocX);
+
+
+   // ------------------ Add (X-axis) tics and text ------------------
+  stroke(clr_lvl4, 150);   strokeWeight(1)
   
 
-  // Draw the nodes
+
+
+  // add the legend label
+  for (var r=0; r<toctable.getRowCount(); r++){
+    thistocX = toctable.getNum(r,tocXCol)
+    // print(thistocX)
+    if (( thistocX > (sliderglobalTOCX-0.5)) && (thistocX < (sliderglobalTOCX+0.5))){
+   
+   globalSubj.x = map(toctable.getNum(r,tocXCol),minTocX,maxTocX,30,width-xmargin*2-6)
+   globalSubj.text = toctable.get(r,tocNameCol);
+  }
+  }
+
+ 
+  push();
+  fill(255).strokeWeight(0).textSize(12);
+  textAlign(CENTER); textFont(fontGudeaRegular);
+  translate(globalSubj.x,ymargin+30)
+  // rotate(radians(270)); 
+  rectMode(CENTER)
+  text(globalSubj.text, xmargin*1.5,ymargin,xmargin,ymargin );
+  pop();
+
+  
+
+  // ------------------ Draw the nodes ------------------
   for (let i = 0; i < 13800; i++) {
 
     if ((mouseX < (xarr[i] + boundRange / 2)) && (mouseX > (xarr[i] - boundRange / 2)) ||
