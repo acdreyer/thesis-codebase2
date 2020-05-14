@@ -1,8 +1,7 @@
 // initalize some variables
-var xarr = [], yarr = [], xnormarr = [], metaIDarr=[], authorarr=[];
-var xarrFilt = [], yarrFilt = [], metaIDFilt = [], authorFilt =[];
-var titlearr =[], titleFilt = [];
-var keywordsarr =[], keywordFilt=[];
+var xarr = [], yarr = [], xnormarr = [], metaIDarr=[], authorarr=[],titlearr =[],keywordsarr =[];
+var xarrFilt = [], yarrFilt = [], metaIDFilt = [], authorFilt =[],titleFilt = [],keywordsFilt=[];
+var xarrFilt2 = [], yarrFilt2 = [], metaIDFilt2 = [], authorFilt2 =[],titleFilt2 = [];
 var boundRange = 2;
 var xSel, ySel;
 var xmargin = 50;
@@ -33,10 +32,11 @@ let bgCol;
 // focus values
 var xfocus = xmargin;
 var yfocus = ymargin;
-var authortext;
-var metaIDtext;
-var titletext;
-var keywordstext;
+var authortext = '';
+var metaIDtext = '';
+var titletext = '';
+var keywordsfiller = '';
+var keywordstext = '';
 
 var firstfocus =false;
 var tocXCol=1;
@@ -53,6 +53,7 @@ globalSubj.text='Select';
 
 var pointclicked = false;
 var sliderMouseOver = false;
+var firstclick =  false;
 
 let img;
 
@@ -227,10 +228,20 @@ var thistest = repFilt;
 // ------------------------------------------------------------------------------
 function draw() {
 
+// clear all filters
   xarrFilt=[];
   yarrFilt=[];
-  metadFilt=[];
+  metaIDFilt=[];
   authorFilt=[];
+  titleFilt=[];
+  keywordsFilt=[];
+  
+  xarrFilt2=[];
+  yarrFilt2=[];
+  metaIDFilt2=[];
+  authorFilt2=[];
+  titleFilt2=[];
+  keywordsFilt2=[];
 
   noSmooth();
   clear();
@@ -244,11 +255,7 @@ function draw() {
   var clr_bg = color(2, 73, 124);
 
 
-  // ------------------ frame the canvas outer border------------------
-  // fill('#ffffff00'); stroke(255,255,255,150); strokeWeight(1)
-  // // rectMode(CORNER);rect(0,0,wwidth,hheight)
-  // fill(bgCol);
-  // rectMode(CORNER);rect(0,0,10,10)
+
 
 
 
@@ -294,7 +301,7 @@ function draw() {
   stroke(clr_lvl4, 150);   strokeWeight(1)
   for (var r=0; r<toctable.getRowCount(); r++){
     thistocX = toctable.getNum(r,tocXCol)
-    if (( thistocX > (sliderglobalTOCX-0.5)) && (thistocX < (sliderglobalTOCX+0.5))){
+    if (( thistocX >= (sliderglobalTOCX-0.5)) && (thistocX <= (sliderglobalTOCX+0.5))){
       globalSubj.x = map(toctable.getNum(r,tocXCol),minTocX,maxTocX,xmargin+slidertextwidth,width-xmargin-slidertextwidth)
       globalSubj.text = toctable.get(r,tocNameCol);
     }
@@ -307,7 +314,6 @@ function draw() {
   rectMode(CENTER)
   text(globalSubj.text, 0,0,slidertextboxW*5,slidertextboxY );
   pop();
-  // rect(globalSubj.x-slidertextboxW*2.5, 0,slidertextboxW*5,slidertextboxY );
   
   
 
@@ -345,7 +351,22 @@ function draw() {
       metaIDFilt.push(metaIDarr[i]);
       authorFilt.push(authorarr[i]);
       titleFilt.push(titlearr[i]);
-      keywordFilt.push(keywordsarr[i]);
+      keywordsFilt.push(keywordsarr[i]);
+    }
+    // add connected authors
+    else if ( authortext == authorarr[i] ){
+      stroke(clr_lvl4b);  // Change the color
+      strokeWeight(1);
+      linedash(xfocus,yfocus,thisx,thisy,[10,5])
+      strokeWeight(4);
+      stroke(clr_lvl4b);  // Change the color
+      xarrFilt2.push(thisx);
+      yarrFilt2.push(thisy);
+      authorFilt2.push(authorarr[i]);
+      metaIDFilt2.push(metaIDarr[i]);
+      titleFilt2.push(titlearr[i]);
+      keywordsFilt2.push(keywordsarr[i]);
+      // authorFilt.push(authorarr[i]);
     }
     else {
       strokeWeight(3);
@@ -464,9 +485,14 @@ function mouseClicked() {
   var minDist = 10000;
 
 if ((mouseY > ymargin) && (mouseY < height-ymargin)  ){
+
+  firstclick= true;
   for (let i = 0; i < xarrFilt.length; i++) {
     thisx = map(xarrFilt[i],minDatX,maxDatX,xmargin,width-xmargin)
     thisy = map(yarrFilt[i],minDatY,maxDatY,ymargin,height-ymargin)
+    thisx2 = map(xarrFilt2[i],minDatX,maxDatX,xmargin,width-xmargin)
+    thisy2 = map(yarrFilt2[i],minDatY,maxDatY,ymargin,height-ymargin)
+
     let d = dist(xarrFilt[i], yarrFilt[i], mouseX, mouseY);
     if ((d < minDist) && ( d < 10 ) ){
       minDist = d;
@@ -475,7 +501,14 @@ if ((mouseY > ymargin) && (mouseY < height-ymargin)  ){
       metaIDtext = metaIDFilt[i];
       authortext = authorFilt[i];
       titletext = titleFilt[i];
-      keywordstext = titleFilt[i];
+      keywordstext = keywordsFilt[i];
+
+      for (let j=0; j< xarrFilt2.length; j++){
+        linedash(thisx,thisy,xarrFilt2[j],yarrFilt2[j],[10,5])
+        print(authorFilt2[j])
+      }
+
+
   }}}
   // prevent default
   // print(authortext)
@@ -575,23 +608,19 @@ function drawTooltip(){
   var clr_bg = color(2, 73, 124);
 
   var textboxW = 300;
-  var textboxH = 80;
+  var textboxH = 200;
   var yoffset = yfocus+10;
   var xoffset = xfocus;
   textsizehere =16;
+  if (firstclick ){
+    keywordsfiller='\n-------\nKeywords: ';
+  }
 
   fill(255).strokeWeight(0).textSize(textsizehere);
   textFont(fonttecnicobold);
 
   rectMode(CORNER); textAlign(LEFT);
-  // textAlign(LEFT,CENTER); 
-  // if (xfocus < textboxW+xmargin){
-  //   textAlign(LEFT);
-  //   xoffset = xfocus;
-  // }
-  // if (yfocus < ymargin+textboxH){
-  //   yoffset = yfocus+10;
-  // }
+ 
   if (xfocus > width-xmargin-textboxW){
     textAlign(RIGHT,TOP);
     xoffset = xfocus-textboxW+10;
@@ -600,16 +629,7 @@ function drawTooltip(){
     yoffset = yfocus-textboxH-10;
   }
   // text(metaIDtext,xfocus+10,yfocus -10)
-  // text(titletext,xfocus+10,yfocus -10)
-  // fill(clr_lvl4b); rect(xoffset,yoffset,textboxW,textboxH)
-  // text(authortext, xoffset,yoffset,textboxW,textboxH)
-  text(titletext+'\n'+authortext, xoffset,yoffset,textboxW,textboxH);
-
-
-
-
-
-
+  text(titletext+'\n'+authortext+keywordsfiller+keywordstext, xoffset,yoffset,textboxW,textboxH);
 
   // ellipse(0,0,10,10)
 }
