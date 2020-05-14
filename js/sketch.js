@@ -63,14 +63,14 @@ let img;
 function preload() {
   // img = loadImage('./assets/graph_paper.jpg');
   // alldata = loadTable('/data/NACA_vizData_all.csv', 'csv', 'header')
-  datatable = loadTable('/data/NACA_viz_full.csv', 'csv', 'header')
-  toctable = loadTable('/data/NACA_vizTOCxnormId.csv', 'csv', 'header')
-  fontGudeaRegular = loadFont('fonts/Gudea-Regular.ttf');
-  fonttecnicoregular = loadFont('fonts/tecnico-regular.ttf');
-  fonttecnicoregularitalic = loadFont('fonts/tecnico-regularitalic.ttf');
-  fonttecnicoregularitalic = loadFont('fonts/tecnico-regularitalic.ttf');
-  fonttecnicobolditalic = loadFont('fonts/tecnico-bolditalic.ttf');
-  fonttecnicobold = loadFont('fonts/tecnico-bold.ttf');
+  datatable = loadTable('./data/NACA_viz_full.csv', 'csv', 'header')
+  toctable = loadTable('./data/NACA_vizTOCxnormId.csv', 'csv', 'header')
+  fontGudeaRegular = loadFont('./fonts/Gudea-Regular.ttf');
+  fonttecnicoregular = loadFont('./fonts/tecnico-regular.ttf');
+  fonttecnicoregularitalic = loadFont('./fonts/tecnico-regularitalic.ttf');
+  fonttecnicoregularitalic = loadFont('./fonts/tecnico-regularitalic.ttf');
+  fonttecnicobolditalic = loadFont('./fonts/tecnico-bolditalic.ttf');
+  fonttecnicobold = loadFont('./fonts/tecnico-bold.ttf');
   // fontItalic = loadFont('assets/Italic.ttf');
   // fontBold = loadFont('assets/Bold.ttf');
 }
