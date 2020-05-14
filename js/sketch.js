@@ -1,7 +1,8 @@
 // initalize some variables
-var xarr = [], yarr = [], xnormarr = [];
-var xarrFilt = [], yarrFilt = [];
-var IDarr =[];
+var xarr = [], yarr = [], xnormarr = [], metaIDarr=[], authorarr=[];
+var xarrFilt = [], yarrFilt = [], metaIDFilt = [], authorFilt =[];
+var titlearr =[], titleFilt = [];
+var keywordsarr =[], keywordFilt=[];
 var boundRange = 2;
 var xSel, ySel;
 var xmargin = 50;
@@ -23,6 +24,7 @@ var highlightSlider = false;
 var slidertextwidth = 25;
 var slidertextboxW = 30;
 var slidertextboxY = ymargin;
+var MP;
 
 // dropdown menus
 let sel;
@@ -31,6 +33,11 @@ let bgCol;
 // focus values
 var xfocus = xmargin;
 var yfocus = ymargin;
+var authortext;
+var metaIDtext;
+var titletext;
+var keywordstext;
+
 var firstfocus =false;
 var tocXCol=1;
 var tocNameCol=2;
@@ -44,20 +51,26 @@ var globalSubj = {};
 globalSubj.x = 50;
 globalSubj.text='Select';
 
-
+var pointclicked = false;
 var sliderMouseOver = false;
 
 let img;
 
 
 
+
 // ------------------- Load images and fonts -------------------
 function preload() {
   // img = loadImage('./assets/graph_paper.jpg');
-  // alldata = loadTable('./data/NACA_vizData_all.csv', 'csv', 'header')
-  datatable = loadTable('./data/NACA_viz_full.csv', 'csv', 'header')
-  toctable = loadTable('./data/NACA_vizTOCxnormId.csv', 'csv', 'header')
-  fontGudeaRegular = loadFont('./fonts/Gudea-Regular.ttf');
+  // alldata = loadTable('/data/NACA_vizData_all.csv', 'csv', 'header')
+  datatable = loadTable('/data/NACA_viz_full.csv', 'csv', 'header')
+  toctable = loadTable('/data/NACA_vizTOCxnormId.csv', 'csv', 'header')
+  fontGudeaRegular = loadFont('fonts/Gudea-Regular.ttf');
+  fonttecnicoregular = loadFont('fonts/tecnico-regular.ttf');
+  fonttecnicoregularitalic = loadFont('fonts/tecnico-regularitalic.ttf');
+  fonttecnicoregularitalic = loadFont('fonts/tecnico-regularitalic.ttf');
+  fonttecnicobolditalic = loadFont('fonts/tecnico-bolditalic.ttf');
+  fonttecnicobold = loadFont('fonts/tecnico-bold.ttf');
   // fontItalic = loadFont('assets/Italic.ttf');
   // fontBold = loadFont('assets/Bold.ttf');
 }
@@ -76,6 +89,8 @@ function setup() {
   // var vizdata = alldat
   print(datatable)
   print(toctable)
+
+
 
 
 
@@ -98,6 +113,7 @@ var metaXnormCol = datatable.columns.indexOf('Xnorm');
 var authorCol = datatable.columns.indexOf('creator');
 var titleCol = datatable.columns.indexOf('title');
 var repTypeCol = datatable.columns.indexOf('repType');
+var keywordsCol = datatable.columns.indexOf('keywordsall');
 var repFilt = 'TR';
 var thistest = repFilt;
 
@@ -111,9 +127,18 @@ var thistest = repFilt;
       let thisx = datatable.getNum(r,metaXcol);
       let thisy = datatable.getNum(r,metaYcol);
       let thisxnorm = datatable.getNum(r,metaXnormCol);
+      let thismetaID = datatable.getString(r,metaIDcol);
+      let thisauthor = datatable.getString(r,authorCol);
+      let thistitle = datatable.getString(r,titleCol);
+      let thiskeywords = datatable.getString(r,keywordsCol);
+      // print(thismetaID)
       xarr.push(thisx);
       yarr.push(thisy);
       xnormarr.push(thisxnorm);
+      metaIDarr.push(thismetaID);
+      authorarr.push(thisauthor);
+      titlearr.push(thistitle);
+      keywordsarr.push(thiskeywords);
 
       // get min/max values for plotting
       // dont need xnorm, because getting it from the TOC section...living on the edge
@@ -136,10 +161,6 @@ var thistest = repFilt;
 // print('Max X:'+str(maxDatX));
 // print('Max Y:'+str(minDatY));
 // print('Max Y:'+str(maxDatY));
-
-
-
-
 
 
 
@@ -208,6 +229,8 @@ function draw() {
 
   xarrFilt=[];
   yarrFilt=[];
+  metadFilt=[];
+  authorFilt=[];
 
   noSmooth();
   clear();
@@ -252,7 +275,7 @@ function draw() {
   // }
   // rectMode(CENTER);rect(width/2,slidery,width-2*xmargin,sliderheight,3)
   // rectMode(CENTER);rect(x_slider,slidery,sliderheight/2,sliderheight,3)
-  stroke(clr_lvl5,150);fill(255,255,255,150); strokeWeight(1)
+  stroke(clr_lvl4b,150); strokeWeight(1)
   line(x_slider,ymargin,x_slider,height-ymargin)
   rectMode(CORNER);
   // text(str(x_slider),x_slider,slidery)
@@ -278,7 +301,7 @@ function draw() {
   }
   push();
   fill(255).strokeWeight(0).textSize(20);
-  textAlign(CENTER,CENTER); textFont(fontGudeaRegular);
+  textAlign(CENTER,CENTER); textFont(fonttecnicoregularitalic);
   translate(globalSubj.x,ymargin/2)
   // rotate(radians(270)); 
   rectMode(CENTER)
@@ -319,6 +342,10 @@ function draw() {
       stroke(clr_lvl4);  // Change the color
       xarrFilt.push(thisx);
       yarrFilt.push(thisy);
+      metaIDFilt.push(metaIDarr[i]);
+      authorFilt.push(authorarr[i]);
+      titleFilt.push(titlearr[i]);
+      keywordFilt.push(keywordsarr[i]);
     }
     else {
       strokeWeight(3);
@@ -348,31 +375,54 @@ function draw() {
   // ------------------ Mouse action ------------------
   strokeWeight(1);
   stroke(clr_lvl1);
-  // line(mouseX, ymargin, mouseX, height-ymargin);
+
+  // draw the line
   if ((mouseY > ymargin) && (mouseY < height-ymargin-30) ){
-    line(xmargin, mouseY+30, width-xmargin, mouseY+30);
-    // line(xmargin, mouseY-30, width-xmargin, mouseY-30);
+    linedash(xmargin, mouseY+30, width-xmargin, mouseY+30,[50,10,10,10]); //draw the horizontal line
     stroke(255);
     fill(255);
     strokeWeight(0.5)
     textFont(fontGudeaRegular);
-    textSize('12')
-    // text('Title number ' + str(mouseX * mouseY), mouseX + 20, mouseY + 20)
+
 
     // hardcoded year...change later xxxxxxx
     stroke(clr_lvl4); fill(clr_lvl4);
     year = round(map(mouseY,ymargin,height-ymargin,1960,1915));
-    textSize(16); textFont(fontGudeaRegular);
-    textAlign(LEFT); text(str(year), xmargin+10, mouseY );
-    // textAlign(RIGHT);text(str(year), width-xmargin-10, mouseY +20);
+    var handlesize =20;
+    textSize(handlesize); 
+    textFont(fontGudeaRegular);
+    textAlign(LEFT,CENTER); text(str(year), xmargin+10, mouseY+50 );
+
 
     // add arrows for slider...maybe need better solution....
     stroke(clr_lvl4); fill(clr_lvl1);
-    if ((mouseX < x_slider + 20) && (mouseX > x_slider - 20)){
-      stroke(clr_lvl4); fill(clr_lvl4);
+    if ((mouseX < x_slider + 50) && (mouseX > x_slider - 50)){
+      stroke('#ffffffff'); fill('#ffffffff');
+      line(x_slider,ymargin,x_slider,height-ymargin) //highlight the vertical line
+      textSize(handlesize/2);
+      if ((x_slider>xmargin+75) && (x_slider<(width-xmargin-75))){
+        push();
+        translate(x_slider-10,mouseY +60)
+        rotate(3*PI/2); textAlign(CENTER,CENTER);
+        text("FINE",0,0);
+        pop();
+      }
+      if ((x_slider>xmargin+75) && (x_slider<(width-xmargin-75)) ){
+      push();
+      translate(x_slider+10,mouseY +60)
+      rotate(3*PI/2); textAlign(CENTER,CENTER);
+      text("MOVE",0,0);
+      pop();
+      }
+      textSize(handlesize);
     }
-    textAlign(LEFT,CENTER); text("→", x_slider+30, mouseY );
-    textAlign(RIGHT,CENTER);text("←", x_slider-30, mouseY );
+    rectMode(CENTER)
+    if (x_slider>xmargin+75){
+      textAlign(CENTER,CENTER);text("<", x_slider-40, mouseY +58);
+    }
+    if (x_slider<(width-xmargin-75)){
+      textAlign(CENTER,CENTER); text(">", x_slider+40, mouseY +58);
+    }
   }
 
 
@@ -385,76 +435,110 @@ function draw() {
   ellipse(xfocus, yfocus, 20, 20);
   strokeWeight(3)
   point(xfocus,yfocus)
+  drawTooltip();
+  
+
+
+
+// drag the slider
+// draggingSlider=false;
+//   theSliderDrags();
+
 }
+// --------------end draw
 
 
+
+
+
+
+
+// ------------------------------------------------------------------------------
+// ------------------------------- User functions -------------------------------
+// ------------------------------------------------------------------------------
 
 // add a tooltip selection.
 //  Check the minimum distance to a point and use that point as highlighted one.
 function mouseClicked() {
-  // xfocus = mouseX;
-  // yfocus = mouseY;
   var minvalX, minvalY;
   var minDist = 10000;
-  
-
-  // firstfocus = true;
-
-  // xfocus = mouseX;
-  // yfocus = mouseY;
 
 if ((mouseY > ymargin) && (mouseY < height-ymargin)  ){
   for (let i = 0; i < xarrFilt.length; i++) {
-
     thisx = map(xarrFilt[i],minDatX,maxDatX,xmargin,width-xmargin)
     thisy = map(yarrFilt[i],minDatY,maxDatY,ymargin,height-ymargin)
     let d = dist(xarrFilt[i], yarrFilt[i], mouseX, mouseY);
-    if (d < minDist) {
+    if ((d < minDist) && ( d < 10 ) ){
       minDist = d;
       xfocus = xarrFilt[i];
       yfocus = yarrFilt[i];
-
-
+      metaIDtext = metaIDFilt[i];
+      authortext = authorFilt[i];
+      titletext = titleFilt[i];
+      keywordstext = titleFilt[i];
   }}}
-
   // prevent default
+  // print(authortext)
+
   return false;
 }
 
 
-// function mousePressed(){
-//   return true;
-// }
+// ------------------------------- User functions -------------------------------
+function mousePressed() {
+  MP = true;
+}
+function mouseReleased() {
+  MP = false;
+}
 
+
+// ------------------------------- Slider function -------------------------------
+// some logic from http://joemckaystudio.com/slider/
 function mouseDragged() {
+// var theSliderDrags = function() {
 
-  // var dragupper = map(mouseX,xmargin,width-xmargin,slidermin,slidermax)
-  // var draglower = map(mouseX,xmargin,width-xmargin,slidermin,slidermax)
-
-
-if ( (mouseY > ymargin) && (mouseX < x_slider + 30) && (mouseX > x_slider - 30) ){
-
-  draggingSlider=true;
-  slider.value(map(mouseX,xmargin,width-xmargin,slidermin,slidermax))
-
-  if (mouseX > width-xmargin) {
-    sliderglobal = width-xmargin;
+  draggingSlider=false;
+    var thisx;
+    var thisxDif = 0.0;
+  // draggingSlider=false;
+  
+  if ( (mouseY > ymargin) && (mouseX < x_slider + 40) && (mouseX > x_slider - 40) ){
+    if (MP && draggingSlider == false){ // if mouse was pressed
+      thisxDif = mouseX - x_slider;
+      draggingSlider=true;
+    }
   }
-  else if (mouseX < xmargin) {
-    sliderglobal = xmargin;
+  
+  
+  if (MP == false && draggingSlider == true){ // if the mouse was just released
+    draggingSlider = false;
   }
-  else {
-    sliderglobal=mouseX;
+  
+  
+  if (draggingSlider ){ 
+
+    thisx = mouseX - thisxDif; // so the slider doens't "jump" to the mouse x. 
+    thisx = constrain(x_slider, xmargin, width-xmargin); // keep the knob on the slider
+    sliderglobal=thisx;
+    sliderglobal = thisx
+    if (mouseX > width-xmargin) {
+      sliderglobal = width-xmargin;
+    }
+    else if (mouseX < xmargin) {
+      sliderglobal = xmargin;
+    }
+    else {
+      sliderglobal=mouseX;
+      slider.value(map(mouseX,xmargin,width-xmargin,slidermin,slidermax))
+    }
   }
 
 }
 
-// return false;
-}
 
 
-
-
+// ------------------------------- Test dropdown -------------------------------
 function changeBg(){
   let val = sel.value();
  if(val == 'Red'){
@@ -467,7 +551,77 @@ function changeBg(){
 }
 
 
+// ------------------------------- Dashed lines -------------------------------
+// from 
+// https://github.com/processing/p5.js/issues/3336
+
+function linedash(x1, y1, x2, y2, list) {
+  drawingContext.setLineDash(list); // set the "dashed line" mode
+  line(x1, y1, x2, y2); // draw the line
+  drawingContext.setLineDash([]); // reset into "solid line" mode
+}
+
+
+
+// ----------------------------------- Tooltip  -------------------------------
 function drawTooltip(){
 
-  ellipse(0,0,10,10)
+  var clr_lvl1 = color(71, 149, 184);
+  var clr_lvl2 = color(25, 108, 158);
+  var clr_lvl3 = color(134, 191, 204);
+  var clr_lvl4 = color(221, 230, 232);
+  var clr_lvl4b = color(221, 230, 232,130);
+  var clr_lvl5 = color(208, 241, 244);
+  var clr_bg = color(2, 73, 124);
+
+  var textboxW = 300;
+  var textboxH = 80;
+  var yoffset = yfocus+10;
+  var xoffset = xfocus;
+  textsizehere =16;
+
+  fill(255).strokeWeight(0).textSize(textsizehere);
+  textFont(fonttecnicobold);
+
+  rectMode(CORNER); textAlign(LEFT);
+  // textAlign(LEFT,CENTER); 
+  // if (xfocus < textboxW+xmargin){
+  //   textAlign(LEFT);
+  //   xoffset = xfocus;
+  // }
+  // if (yfocus < ymargin+textboxH){
+  //   yoffset = yfocus+10;
+  // }
+  if (xfocus > width-xmargin-textboxW){
+    textAlign(RIGHT,TOP);
+    xoffset = xfocus-textboxW+10;
+  }
+  if (yfocus > height-ymargin-textboxH){
+    yoffset = yfocus-textboxH-10;
+  }
+  // text(metaIDtext,xfocus+10,yfocus -10)
+  // text(titletext,xfocus+10,yfocus -10)
+  // fill(clr_lvl4b); rect(xoffset,yoffset,textboxW,textboxH)
+  // text(authortext, xoffset,yoffset,textboxW,textboxH)
+  text(titletext+'\n'+authortext, xoffset,yoffset,textboxW,textboxH);
+
+
+
+
+
+
+
+  // ellipse(0,0,10,10)
 }
+
+
+
+
+// class tooltip {
+//   constructor() {
+//     this.x;
+//     this.y = random(height);
+//     this.diameter = random(10, 30);
+//     this.speed = 1;
+//   }
+// }
